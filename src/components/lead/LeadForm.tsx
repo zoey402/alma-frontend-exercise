@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Button from '@/components/ui/Button';
@@ -15,6 +15,8 @@ interface LeadFormProps {
 }
 
 const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  
   const { 
     control, 
     handleSubmit, 
@@ -32,10 +34,12 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
       resume: null,
       openInput: '',
     },
-});
+  });
 
   const onSubmit = async (data: LeadFormSchemaType) => {
     try {
+      setSubmissionError(null);
+      
       // Create FormData for file upload
       const formData = new FormData();
       formData.append('firstName', data.firstName);
@@ -62,17 +66,28 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
         throw new Error(errorData.error || 'Failed to submit form');
       }
       
-      // Mark as submitted and reset form
-      onSubmitSuccess();
+      // Reset form and call success callback
       reset();
+      onSubmitSuccess();
+      
     } catch (error) {
       console.error('Error submitting form:', error);
-      // Here you would handle errors, e.g. show a toast notification
+      setSubmissionError(
+        error instanceof Error 
+          ? error.message 
+          : 'An unexpected error occurred. Please try again.'
+      );
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {submissionError && (
+        <div className="bg-red-50 border border-red-200 text-red-600 rounded-md p-4 text-sm">
+          {submissionError}
+        </div>
+      )}
+      
       {/* Personal Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -183,15 +198,15 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
                       onChange={(e) => {
                         const checked = e.target.checked;
                         const newValue = checked
-                        ? [...value, option.value]
-                        : value.filter((v) => v !== option.value);
+                          ? [...value, option.value]
+                          : value.filter((v) => v !== option.value);
                         onChange(newValue);
                       }}
                     />
                   ))}
                   {errors.interestedVisas && (
                     <p className="text-red-500 text-sm mt-1">
-                    {errors.interestedVisas.message}
+                      {errors.interestedVisas.message}
                     </p>
                   )}
                 </div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { leadFormSchema } from '@/schemas/leadFormSchema';
-import { mockDbService } from '@/services/mockDbService';
+import { leadsStorageService } from '@/services/leadsStorageService';
 import { fileUploadService } from '@/services/fileUploadService';
 import { z } from 'zod';
 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Create a new lead using our service
-    const newLead = mockDbService.createLead({
+    const newLead = leadsStorageService.createLead({
       firstName,
       lastName,
       email,
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
     
     // Get filtered and paginated leads
-    const result = mockDbService.filterLeads({
+    const result = leadsStorageService.filterLeads({
       search: searchQuery,
       status: statusFilter,
       page,

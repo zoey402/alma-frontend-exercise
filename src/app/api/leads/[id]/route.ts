@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { mockDbService } from '@/services/mockDbService';
+import { leadsStorageService } from '@/services/leadsStorageService';
 
 // GET /api/leads/[id] - Get a single lead by ID
 export async function GET(
@@ -12,7 +12,7 @@ export async function GET(
     const id = params.id;
     
     // Find the lead by ID
-    const lead = mockDbService.getLeadById(id);
+    const lead = leadsStorageService.getLeadById(id);
     
     if (!lead) {
       return NextResponse.json(

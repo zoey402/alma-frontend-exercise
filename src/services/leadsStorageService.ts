@@ -1,26 +1,63 @@
+import fs from 'fs';
+import path from 'path';
 import { Lead, LeadStatus } from '@/types/lead';
-import { mockLeads as initialMockLeads } from '@/mock/leads';
+import { mockLeads } from '@/mock/leads';
 
-let globalLeads = [...initialMockLeads];
+// Define the path to our data file
+const DATA_DIR = path.join(process.cwd(), 'data');
+const LEADS_FILE = path.join(DATA_DIR, 'leads.json');
 
-class MockDbService {
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
 
-  // Helper to get a id
+// Ensure leads.json exists with initial data
+if (!fs.existsSync(LEADS_FILE)) {
+  fs.writeFileSync(LEADS_FILE, JSON.stringify(mockLeads, null, 2));
+}
+
+class LeadsStorageService {
+  // Helper to generate a UUID
   private generateId(): string {
     return Math.random().toString(36).substring(2, 11);
   }
 
+  // Read all leads from file
+  private readLeadsFile(): Lead[] {
+    try {
+      const fileContent = fs.readFileSync(LEADS_FILE, 'utf-8');
+      return JSON.parse(fileContent) as Lead[];
+    } catch (error) {
+      console.error('Error reading leads file:', error);
+      return [];
+    }
+  }
+
+  // Write leads to file
+  private writeLeadsFile(leads: Lead[]): void {
+    try {
+      fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2));
+    } catch (error) {
+      console.error('Error writing leads file:', error);
+    }
+  }
+
+  // Get all leads
   getAllLeads(): Lead[] {
-    return globalLeads;
+    return this.readLeadsFile();
   }
   
   // Get a lead by ID
   getLeadById(id: string): Lead | undefined {
-    return globalLeads.find(lead => lead.id === id);
+    const leads = this.readLeadsFile();
+    return leads.find(lead => lead.id === id);
   }
   
   // Create a new lead
   createLead(leadData: Omit<Lead, 'id' | 'status' | 'createdAt' | 'updatedAt'>): Lead {
+    const leads = this.readLeadsFile();
+    
     const newLead: Lead = {
       ...leadData,
       id: this.generateId(),
@@ -29,38 +66,43 @@ class MockDbService {
       updatedAt: new Date().toISOString(),
     };
     
-    globalLeads.push(newLead);
+    leads.push(newLead);
+    this.writeLeadsFile(leads);
     return newLead;
   }
   
   // Update a lead
   updateLead(id: string, updates: Partial<Lead>): Lead | null {
-    const index = globalLeads.findIndex(lead => lead.id === id);
+    const leads = this.readLeadsFile();
+    const index = leads.findIndex(lead => lead.id === id);
     
     if (index === -1) {
       return null;
     }
     
     const updatedLead = {
-      ...globalLeads[index],
+      ...leads[index],
       ...updates,
       updatedAt: new Date().toISOString(),
     };
     
-    globalLeads[index] = updatedLead;
+    leads[index] = updatedLead;
+    this.writeLeadsFile(leads);
     return updatedLead;
   }
   
   // Delete a lead
   deleteLead(id: string): Lead | null {
-    const index = globalLeads.findIndex(lead => lead.id === id);
+    const leads = this.readLeadsFile();
+    const index = leads.findIndex(lead => lead.id === id);
     
     if (index === -1) {
       return null;
     }
     
-    const deletedLead = globalLeads[index];
-    globalLeads.splice(index, 1);
+    const deletedLead = leads[index];
+    leads.splice(index, 1);
+    this.writeLeadsFile(leads);
     return deletedLead;
   }
   
@@ -84,7 +126,7 @@ class MockDbService {
       limit = 10,
     } = options;
     
-    let filteredLeads = [...globalLeads];
+    let filteredLeads = this.readLeadsFile();
     
     // Apply search filter
     if (search) {
@@ -109,16 +151,17 @@ class MockDbService {
     return {
       leads: paginatedLeads,
       total,
-      page,
       limit,
+      page,
       totalPages,
     };
   }
   
+  // Reset data to initial mock data
   resetData(): void {
-    globalLeads = [...initialMockLeads];
+    this.writeLeadsFile([...mockLeads]);
   }
 }
 
 // Create and export a singleton instance
-export const mockDbService = new MockDbService();
+export const leadsStorageService = new LeadsStorageService();

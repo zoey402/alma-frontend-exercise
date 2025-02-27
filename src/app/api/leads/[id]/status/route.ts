@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LeadStatus } from '@/types/lead';
-import { mockDbService } from '@/services/mockDbService';
+import { leadsStorageService } from '@/services/leadsStorageService';
 
 // PATCH /api/leads/[id]/status - Update a lead's status
 export async function PATCH(
@@ -26,7 +26,7 @@ export async function PATCH(
     }
     
     // Update the lead status
-    const updatedLead = mockDbService.updateLead(id, { status });
+    const updatedLead = leadsStorageService.updateLead(id, { status });
     
     if (!updatedLead) {
       return NextResponse.json(

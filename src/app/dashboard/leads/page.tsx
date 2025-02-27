@@ -9,7 +9,6 @@ import LeadsTable from '@/components/dashboard/LeadsTable';
 import Pagination from '@/components/ui/Pagination';
 import Loading from '@/components/ui/Loading';
 
-
 export default function LeadsPage() {
   const router = useRouter();
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -19,15 +18,27 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isUpdating, setIsUpdating] = useState<Record<string, boolean>>({});
+  const [totalPages, setTotalPages] = useState<number>(1);
   const leadsPerPage = 10;
 
   const fetchLeads = useCallback(async () => {
     try {
-      const response = await fetch('/api/leads');
+      setIsLoading(true);
+      
+      // Build the query string for filtering and pagination
+      const queryParams = new URLSearchParams();
+      if (searchQuery) queryParams.append('search', searchQuery);
+      if (statusFilter) queryParams.append('status', statusFilter);
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('limit', leadsPerPage.toString());
+      
+      const response = await fetch(`/api/leads?${queryParams.toString()}`);
+      
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
           setLeads(data.data);
+          setTotalPages(data.pagination.totalPages);
         } else {
           console.error('Error fetching leads:', data.error);
         }
@@ -39,7 +50,7 @@ export default function LeadsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchQuery, statusFilter, currentPage, leadsPerPage]);
 
   useEffect(() => {
     // Check if user is authenticated (in a real app, this would verify JWT, cookie, etc.)
@@ -51,14 +62,21 @@ export default function LeadsPage() {
         // NOTE: In a production application, this should be a real API request
         // to verify the user's authentication status based on JWT or session cookies
         setIsAuthenticated(true);
-        await fetchLeads();
       } catch (error) {
         console.error('Authentication failed:', error);
         router.push('/login'); // Redirect to login if not authenticated
       }
     };
+    
     checkAuth();
-  }, [router, fetchLeads]);
+  }, [router]);
+
+  useEffect(() => {
+    // Only fetch leads if the user is authenticated
+    if (isAuthenticated) {
+      fetchLeads();
+    }
+  }, [isAuthenticated, fetchLeads]);
 
   // Update lead status
   const handleUpdateStatus = async (leadId: string, newStatus: LeadStatus) => {
@@ -75,6 +93,7 @@ export default function LeadsPage() {
         throw new Error('API request failed');
       }
       
+      // Refresh the lead list after updating
       await fetchLeads();
     } catch (error) {
       console.error('Failed to update lead status:', error);
@@ -84,37 +103,18 @@ export default function LeadsPage() {
   };
 
   const handleFilterChange = useCallback(() => {
-    setCurrentPage(1); // 重置到第一页
-  }, []);
-
-  // Filter leads based on search query and status filter
-  const filteredLeads = leads.filter(lead => {
-    const matchesSearch = searchQuery === '' || 
-      `${lead.firstName} ${lead.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === '' || lead.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
-
-  // Pagination
-  const indexOfLastLead = currentPage * leadsPerPage;
-  const indexOfFirstLead = indexOfLastLead - leadsPerPage;
-  const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
-  const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
+    setCurrentPage(1); // Reset to first page when filters change
+    fetchLeads(); // Fetch leads with new filters
+  }, [fetchLeads]);
 
   // Handle page change
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
+    // fetchLeads will be called by the useEffect that depends on currentPage
   };
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
   if (!isAuthenticated) {
-    return null; // Will redirect to login
+    return <Loading />; // Show loading while checking authentication
   }
 
   return (
@@ -133,17 +133,25 @@ export default function LeadsPage() {
           onFilterChange={handleFilterChange}
         />
         
-        <LeadsTable 
-          leads={currentLeads}
-          onUpdateStatus={handleUpdateStatus}
-          isUpdating={isUpdating}
-        />
-        
-        <Pagination 
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-accent border-t-transparent"></div>
+          </div>
+        ) : (
+          <>
+            <LeadsTable 
+              leads={leads}
+              onUpdateStatus={handleUpdateStatus}
+              isUpdating={isUpdating}
+            />
+            
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </>
+        )}
       </div>
     </div>
   );
