@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { LeadStatus } from '@/types/lead';
 
 interface SearchFilterBarProps {
@@ -16,16 +16,33 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   setStatusFilter,
   onFilterChange
 }) => {
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+  // Local state to track input value before debouncing
+  const [inputValue, setInputValue] = useState(searchQuery);
+  
+  // Initialize the input value with the searchQuery prop
+  useEffect(() => {
+    setInputValue(searchQuery);
+  }, [searchQuery]);
 
-    if (onFilterChange) {
-      const timer = setTimeout(() => {
-        onFilterChange();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [setSearchQuery, onFilterChange]);
+  // Handle input changes with debounce
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+  }, []);
+
+  // Set up debounced effect for search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (inputValue !== searchQuery) {
+        setSearchQuery(inputValue);
+        if (onFilterChange) {
+          onFilterChange();
+        }
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [inputValue, searchQuery, setSearchQuery, onFilterChange]);
 
   const handleStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
@@ -46,7 +63,7 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           type="text"
           className="form-input pl-10 w-full p-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
           placeholder="Search"
-          value={searchQuery}
+          value={inputValue}
           onChange={handleSearchChange}
         />
       </div>
