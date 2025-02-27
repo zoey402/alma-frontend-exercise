@@ -23,13 +23,3 @@ export interface Lead {
     createdAt: string;
     updatedAt: string;
 }
-  
-export interface LeadFormData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    linkedin: string;
-    interestedVisas: InterestedVisa[];
-    resume: File | null;
-    openInput: string;
-}
