@@ -3,226 +3,164 @@
 ## 1. System Architecture Overview
 
 ### 1.1 Application Architecture
-The Lead Management System will be built using Next.js with TypeScript, following a modern architecture that leverages Next.js 14's features, including the App Router for improved routing capabilities and Server Components for enhanced performance. The architecture will consist of:
+The Lead Management System is built using Next.js 14 with TypeScript, following a modern architecture that leverages Next.js App Router for improved routing capabilities and Server Components for enhanced performance. The architecture consists of:
 
 - **Client-side components**: Responsible for rendering UI and handling user interactions
 - **Server components**: Handling data fetching and processing
 - **API routes**: Managing lead data operations and authentication
-- **Mock or real database**: Storing lead information and state
+- **Mock database**: Storing lead information and state using local JSON storage
 
 ### 1.2 Component Structure
 
 ```
 /app
-├── /public           # Public assets
-├── /app              # Next.js app directory
-│   ├── /api          # API routes
-│   │   ├── /leads    # Lead management APIs
-│   │   └── /auth     # Authentication APIs
+├── /public           # Public assets and uploads
+├── /src              # Source code
+│   ├── /app          # Next.js app directory
+│   │   ├── /api      # API routes for leads
+│   │   ├── /dashboard # Protected internal pages
+│   │   ├── /login    # Authentication pages
+│   │   └── /page.tsx # Public lead form
 │   ├── /components   # Shared components
-│   │   ├── /ui       # UI components (buttons, inputs, etc.)
-│   │   └── /forms    # Form components
-│   ├── /lib          # Utility functions and helpers
-│   ├── /hooks        # Custom React hooks
+│   │   ├── /dashboard # Dashboard-specific components
+│   │   ├── /lead     # Lead form components
+│   │   └── /ui       # Reusable UI components
+│   ├── /services     # Service layer for data handling
+│   ├── /schemas      # Validation schemas using Zod
 │   ├── /types        # TypeScript type definitions
-│   ├── /public       # Public lead form page
-│   └── /dashboard    # Protected internal dashboard pages
+│   ├── /constants    # Application constants
+│   └── /mock         # Mock data for development
 ```
 
 ### 1.3 Data Flow Diagram
 1. **Lead Submission Flow**:
    - User fills out public lead form
-   - Form validation occurs client-side
-   - On submission, data is sent to API endpoint
-   - File is uploaded to storage
+   - Form validation occurs client-side with React Hook Form and Zod
+   - On submission, data is sent to API endpoint as FormData
+   - File is uploaded to local storage
    - Lead is created with PENDING status
-   - Confirmation is displayed to user
+   - Confirmation screen is displayed to user
 
 2. **Lead Management Flow**:
    - Authenticated user accesses internal dashboard
-   - System fetches leads from API
+   - System fetches leads from API with optional filtering
    - User can view lead details and change status
    - Status updates are sent to API
    - UI reflects updated status
 
-## 2. Technology Stack & Rationale
+## 2. Implementation Details & Rationale
 
 ### 2.1 Core Technologies
-- **Next.js**: Chosen for its server-side rendering capabilities, API routes, built-in routing, and overall developer experience. Next.js provides an excellent foundation for building both public-facing and internal-facing components of the application.
+- **Next.js**: Chosen for its server-side rendering capabilities, API routes, built-in routing, and overall developer experience. The App Router in Next.js 14 provides excellent routing capabilities for both public and protected pages.
 
-- **TypeScript**: Implementing TypeScript for type safety will reduce runtime errors, improve code quality through better IDE support, and enhance maintainability. This choice aligns with industry best practices and will make the codebase more robust.
+- **TypeScript**: Implemented for type safety to reduce runtime errors, improve code quality, and enhance maintainability. This has proven valuable in maintaining a robust codebase, especially for form handling and data validation.
 
-### 2.2 UI/Component Libraries
-- **Tailwind CSS**: For styling the application with utility-first CSS. Tailwind offers a highly customizable approach without the overhead of a full component library, allowing for precise matching with the Figma designs.
+### 2.2 UI/Component Implementation
+- **Tailwind CSS**: Used for styling with a utility-first approach. Tailwind provided a highly customizable way to match the design requirements, with a custom color system based on the design specifications.
 
-- **Color System**: Based on the Figma mockups, we'll implement a specific color scheme:
-  - Primary brand colors: dark (#1d1d1d) for text and buttons, accent green (#B8D957) for highlighting
-  - Status indicators: pending (#6B7280), reached-out (#B8D957)
-  - Accent-light (#f8fdd3) used for the sidebar background in the internal admin interface
+**Note on Design Fidelity**: Due to limitations in font assets and images, the implementation isn't an exact match with the Figma mockups. However, within these constraints, we've made every effort to stay as close as possible to the design intent while maintaining functionality.
 
-- **Headless UI**: To complement Tailwind CSS with accessible UI components that can be styled to match the design requirements.
-
-- **JsonForms**: To implement the lead form in a configuration-driven way, making the form structure more maintainable and adaptable.
-
-
+- **Component Library**: Custom UI components were created to ensure consistency:
+  - Button
+  - Input
+  - Select
+  - Checkbox
+  - FileUpload
+  - Textarea
+  - StatusBadge
 
 ### 2.3 Form Handling
-- **React Hook Form**: For efficient form state management and validation with minimal re-renders. It provides a good balance of performance and developer experience.
+- **React Hook Form**: Implemented for efficient form state management and validation with minimal re-renders. The `useForm` hook along with controllers provided excellent handling of complex form inputs.
 
-- **Zod**: For schema validation, working well with TypeScript and React Hook Form.
+- **Zod**: Used for schema validation, working well with TypeScript and React Hook Form. Schema definitions provide both runtime validation and TypeScript type inference.
 
 ### 2.4 State Management
-- **Context API** + **useReducer**: For local state management within component trees. This should be sufficient for this application's complexity level.
+- **React Hooks**: Used local component state management with `useState` and `useEffect` for most components, which proved sufficient for the application's complexity.
 
-- **Redux Toolkit** (for bonus implementation): For global state management if the application scales. Redux Toolkit reduces boilerplate and provides built-in immutability, which makes state updates more predictable.
+- **App-wide State**: For authentication state, we used cookies and localStorage to maintain login status.
 
 ### 2.5 File Upload
-- **next-connect**: To handle multipart form data for file uploads.
-
-- **react-dropzone**: For enhanced file upload user experience.
-
-- **multer** (server-side): For processing uploaded files in API routes.
+- **FormData API**: Used for handling multipart form data for file uploads.
+- **Local Storage**: Files are stored in the `/public/uploads` directory for demonstration purposes.
 
 ### 2.6 Authentication
-- **NextAuth.js**: For implementing a simple authentication system with email/password login. This will secure the internal leads list UI.
+- **Mock Authentication System**: Implemented a simple authentication system with hardcoded credentials:
+  - Email: admin@example.com
+  - Password: password123
 
-- **Middleware**: Using Next.js middleware to protect routes and redirect unauthenticated users.
+- **Next.js Middleware**: Implemented route protection via middleware to check authentication status before allowing access to protected routes.
 
-## 3. Authentication Mechanism Design
+## 3. Component Design
 
-### 3.1 Mock Authentication Implementation
-For the mock authentication system:
+### 3.1 Public Lead Form
+- **Form Structure**: Implemented as multi-section form with clear grouping of related fields.
+- **Validation**: Real-time validation with clear error messages.
+- **File Upload**: Drag-and-drop and click-to-upload functionality for resumes.
+- **Confirmation Screen**: Dedicated page showing submission success.
 
-1. **Login Page**: Create a simple login form with email/password fields.
-2. **Static Credentials**: Use hardcoded credentials for demonstration (e.g., email: admin@example.com, password: password123).
-3. **JWT Tokens**: Generate and store JWT tokens in cookies/local storage upon successful authentication.
-4. **Protected Routes**: Implement middleware to check for valid authentication before allowing access to internal pages.
+### 3.2 Internal Leads List UI
+- **Table View**: Responsive table displaying key lead information.
+- **Detail View**: Expandable rows for viewing complete lead details.
+- **Status Management**: Implemented status change functionality with loading indicators.
+- **Search and Filter**: Implemented text search and status filtering.
 
-### 3.2 Route Protection Strategy
-- **Public Routes**: `/` for the lead submission form, accessible to everyone.
-- **Protected Routes**: `/dashboard/*` for internal pages, requiring authentication.
-- **Middleware**: Implementing route protection via Next.js middleware that checks for authentication status.
-- **Redirection**: Unauthenticated users attempting to access protected routes will be redirected to the login page.
+### 3.3 Status Transition Mechanism
+- **Current Implementation**: Button-based approach with confirmation through loading state.
 
-## 4. Component Design
+> 💡 **Proposed UX Improvement**: 
+> 
+> Consider replacing the explicit "Mark as Reached Out" button with a clickable status badge. This would be more intuitive as users often expect status indicators to be interactive. This change would:
+> 
+> 1. Declutter the UI by removing an explicit button
+> 2. Follow common UX patterns where status indicators can be toggled
+> 3. Provide a more direct way to update status
+> 4. Reduce the visual complexity of the leads table
+>
+> This proposed change would better align with user expectations and modern UI patterns, where the status itself serves as both an indicator and an action point.
 
-### 4.1 Public Lead Form
-- **Form Structure**: Implement a multi-section form matching the Figma design with the distinctive light green background and circular decorative elements.
-- **Field Components**: Create reusable form field components with built-in validation, including the "Country of Citizenship" dropdown field shown in the Figma mockup.
-- **Visa Selection**: Implement checkbox-based selection for visa categories as displayed in the Figma design (O1, EB-1A, EB-2 NIW, "I don't know" options).
-- **File Upload**: Implement a drag-and-drop interface with preview functionality for resume/CV.
-- **Submission Handling**: Implement a dedicated success confirmation page with the document icon and "Go Back to Homepage" button as shown in the Figma design.
+## 4. API Design
 
-### 4.2 Internal Leads List UI
-- **Table/List View**: Display leads in a table layout with columns aligned with Figma design (Name, Submitted, Status, Country).
-- **Detail View**: Implement expandable rows or modal dialogs to show full lead details.
-- **Status Management**: Add buttons/controls to change lead status with visual feedback while maintaining the clean UI shown in the design.
-- **Search and Filter**: Implement search functionality and dropdown filter for Status that matches the design's minimalist style.
-- **Navigation**: Implement the side navigation with the Alma logo as shown in the Figma design.
+### 4.1 Implemented Endpoints
+- **POST /api/leads**: Create a new lead (public endpoint)
+- **GET /api/leads**: Get all leads with filtering and pagination (protected)
+- **GET /api/leads/[id]**: Get a specific lead by ID (protected)
+- **PATCH /api/leads/[id]/status**: Update a lead's status (protected)
 
-### 4.3 Status Transition Mechanism
-- **Status Button**: Design a clear visual button to change status from PENDING to REACHED_OUT.
-- **Confirmation Dialog**: Implement a confirmation step before finalizing status changes.
-- **Optimistic Updates**: Update UI immediately while the API request processes in the background.
-- **Error Handling**: Provide recovery mechanisms if status updates fail.
+### 4.2 Authentication Mechanism
+- **Cookie-based Auth**: Using 'authToken' cookie to maintain authentication
+- **Mock JWT**: For demonstration purposes, using a simple token system
 
-## 5. Data Models
+### 4.3 Data Storage
+- **JSON File Storage**: Using local file system to store leads in a JSON file
+- **Mock Service Layer**: Abstracted data access through service classes
 
-### 5.1 Lead Data Structure
-```typescript
-interface Lead {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  linkedin: string;
-  countryOfCitizenship: string;
-  interestedVisas: string[];
-  resumeUrl: string;
-  openInput: string;
-  status: LeadStatus;
-  createdAt: string;
-  updatedAt: string;
-}
+## 5. Performance & Responsiveness
 
-enum LeadStatus {
-  PENDING = 'PENDING',
-  REACHED_OUT = 'REACHED_OUT'
-}
-```
+### 5.1 Form Validation
+- **Client-side Validation**: Implemented real-time validation as users type
+- **Schema-based Validation**: Using Zod schemas for consistent validation rules
 
-### 5.2 Form Configuration (for JsonForms implementation)
-```typescript
-const leadFormSchema = {
-  type: 'object',
-  properties: {
-    firstName: { type: 'string', minLength: 1 },
-    lastName: { type: 'string', minLength: 1 },
-    email: { type: 'string', format: 'email' },
-    linkedin: { type: 'string', format: 'uri' },
-    interestedVisas: {
-      type: 'array',
-      items: { type: 'string' }
-    },
-    openInput: { type: 'string' }
-  },
-  required: ['firstName', 'lastName', 'email', 'linkedin', 'interestedVisas']
-};
-```
+### 5.2 Responsive Design
+- **Mobile-first Approach**: UI elements scale appropriately for different screen sizes
+- **Flexible Layout**: Dashboard and form layouts adapt to viewport width
 
-## 6. API Design
+### 5.3 User Experience Enhancements
+- **Loading States**: Implemented for form submissions and data fetching
+- **Optimistic Updates**: Immediate UI feedback for status changes
+- **Error Handling**: Clear error messages for form validations and API failures
 
-### 6.1 Lead Creation API
-- **Endpoint**: `POST /api/leads`
-- **Request**: Multipart form data including file upload
-- **Response**: Created lead object with ID
-- **Error Handling**: Validation errors, server errors
+## 6. Current Limitations and Future Improvements
 
-### 6.2 Leads Retrieval API
-- **Endpoint**: `GET /api/leads`
-- **Query Parameters**: Optional filters, pagination, sorting
-- **Response**: Array of lead objects with pagination metadata
-- **Authentication**: Required
+### 6.1 Current Limitations
+- **Authentication**: Basic mock authentication system without proper security
+- **Data Persistence**: Reliance on local file system instead of a proper database
+- **Design Fidelity**: Some discrepancies from the Figma mockups due to missing assets
 
-### 6.3 Lead Status Update API
-- **Endpoint**: `PATCH /api/leads/{id}`
-- **Request Body**: New status
-- **Response**: Updated lead object
-- **Authentication**: Required
-
-### 6.4 File Upload Handling
-- **Endpoint**: Part of lead creation
-- **Storage**: Files stored in a simulated file system (or real cloud storage in production)
-- **Access Control**: Secure links for internal users only
-
-## 7. Performance & User Experience Considerations
-
-### 7.1 Form Validation Feedback
-- **Real-time Validation**: Implement client-side validation as users type
-- **Error Messages**: Display clear, actionable error messages next to relevant fields
-- **Submission Prevention**: Disable submission until all required fields are valid
-
-### 7.2 Responsive Design Approach
-- **Mobile-First**: Design components with mobile-first approach
-- **Breakpoints**: Implement responsive breakpoints at standard screen sizes
-- **Flexible Components**: Ensure UI elements adapt gracefully to different screen widths
-- **Touch-Friendly Inputs**: Optimize input sizes and spacing for touch interactions
-
-### 7.3 Loading State Management
-- **Loading Indicators**: Implement spinners or skeleton screens during data fetching
-- **Optimistic Updates**: Show immediate feedback for user actions before server confirmation
-- **Throttling/Debouncing**: Prevent excessive API calls during rapid user interactions
-
-## 8. Testing Strategy
-
-### 8.1 Unit Testing
-- **Testing Framework**: Jest for unit testing
-- **Component Testing**: React Testing Library for component tests
-- **Coverage Targets**: Aim for >80% code coverage on critical paths
-
-### 8.2 Test Planning
-- **Form Validation Tests**: Verify all validation rules work correctly
-- **API Integration Tests**: Test API endpoints with mocked responses
-- **Authentication Tests**: Verify route protection works as expected
-- **Responsive Design Tests**: Test UI at different viewport sizes
-
+### 6.2 Future Improvements
+- **Enhanced Authentication**: Implement NextAuth.js for proper authentication
+- **Database Integration**: Replace JSON file storage with a real database
+- **Advanced Filtering**: Add more sophisticated search and filtering capabilities
+- **Status Workflow**: Implement the proposed clickable status badge design
+- **JsonForms Integration**: Implement configuration-driven form generation
+- **Testing**: Add comprehensive unit and integration tests
+- **UI Refinements**: Further polish to match design mockups more closely

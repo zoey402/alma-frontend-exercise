@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Alma Lead Management System
+
+A Next.js application for creating, managing, and updating leads for immigration visa prospects.
+
+## Features
+
+- **Public Lead Form**: Allows prospects to submit their information and upload resumes
+- **Internal Dashboard**: Protected area for staff to view and manage lead information
+- **Lead Status Management**: Simple workflow to track lead status (PENDING → REACHED_OUT)
+- **Responsive Design**: Works well on mobile and desktop devices
+
+## Technology Stack
+
+- **Frontend**: Next.js 14 with TypeScript, React Hook Form, Zod
+- **Styling**: Tailwind CSS
+- **Authentication**: Simple mock authentication system
+- **Lead Storage**: Local storage with mock implementation
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ and npm/yarn
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/zoey402/alma-frontend-exercise.git
+cd alma-frontend-exercise
+```
+
+2. Install dependencies
+```bash
+npm install
+# or
+yarn
+```
+
+3. Run the development server
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Public Lead Form
 
-## Learn More
+- Access the public lead form at the root URL: [http://localhost:3000/](http://localhost:3000/)
+- Fill in all required fields and upload a resume to submit the form
 
-To learn more about Next.js, take a look at the following resources:
+### Internal Dashboard
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Access the internal dashboard at: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+- Login credentials for demo:
+  - Email: admin@example.com
+  - Password: password123
+- View lead details by clicking "View Details"
+- Update lead status from PENDING to REACHED_OUT using the "Mark as Reached Out" button
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
