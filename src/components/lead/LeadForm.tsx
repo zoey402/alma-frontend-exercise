@@ -82,14 +82,12 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="text-center mb-8 flex justify-center">
-        <div className="max-w-md">
-            <h2 className="text-xl font-semibold mb-2">Want to understand your visa options?</h2>
-            <p className="text-text-secondary mb-8">
-            Submit the form below and our team of experienced attorneys will review your 
-            information and send a preliminary assessment of your case based on your goals.
-            </p>
-        </div>
+      <div className="text-center mb-8">
+        <h2 className="text-xl font-semibold mb-2">Want to understand your visa options?</h2>
+        <p className="text-text-secondary mb-8 max-w-md mx-auto">
+          Submit the form below and our team of experienced attorneys will review your 
+          information and send a preliminary assessment of your case based on your goals.
+        </p>
       </div>
 
       {submissionError && (
@@ -99,118 +97,113 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
       )}
       
       {/* Personal Information */}
-      <div className="flex justify-center mb-8">
-        <div className="w-full space-y-4">
-            <Controller
-            name="firstName"
-            control={control}
-            render={({ field }) => (
-                <Input
-                id="firstName"
-                placeholder="First Name"
-                error={errors.firstName?.message}
-                {...field}
-                />
-            )}
+      <div className="space-y-4 max-w-md mx-auto">
+        <Controller
+          name="firstName"
+          control={control}
+          render={({ field }) => (
+            <Input
+              id="firstName"
+              placeholder="First Name"
+              error={errors.firstName?.message}
+              {...field}
             />
-            
-            <Controller
-            name="lastName"
-            control={control}
-            render={({ field }) => (
-                <Input
-                id="lastName"
-                placeholder="Last Name"
-                error={errors.lastName?.message}
-                {...field}
-                />
-            )}
+          )}
+        />
+        
+        <Controller
+          name="lastName"
+          control={control}
+          render={({ field }) => (
+            <Input
+              id="lastName"
+              placeholder="Last Name"
+              error={errors.lastName?.message}
+              {...field}
             />
-            
-            <Controller
-            name="email"
-            control={control}
-            render={({ field }) => (
-                <Input
-                id="email"
-                type="email"
-                placeholder="Email"
-                error={errors.email?.message}
-                {...field}
-                />
-            )}
+          )}
+        />
+        
+        <Controller
+          name="email"
+          control={control}
+          render={({ field }) => (
+            <Input
+              id="email"
+              type="email"
+              placeholder="Email"
+              error={errors.email?.message}
+              {...field}
             />
-            
-            <Controller
-            name="countryOfCitizenship"
-            control={control}
-            render={({ field }) => (
-                <Select
-                id="countryOfCitizenship"
-                options={countryOptions}
-                error={errors.countryOfCitizenship?.message}
-                {...field}
-                />
-            )}
+          )}
+        />
+        
+        <Controller
+          name="countryOfCitizenship"
+          control={control}
+          render={({ field }) => (
+            <Select
+              id="countryOfCitizenship"
+              options={countryOptions}
+              error={errors.countryOfCitizenship?.message}
+              {...field}
             />
+          )}
+        />
 
-            <Controller
-            name="linkedin"
-            control={control}
-            render={({ field }) => (
-                <Input
-                id="linkedin"
-                placeholder="LinkedIn / Personal Website URL"
-                error={errors.linkedin?.message}
-                {...field}
-                />
-            )}
+        <Controller
+          name="linkedin"
+          control={control}
+          render={({ field }) => (
+            <Input
+              id="linkedin"
+              placeholder="LinkedIn / Personal Website URL"
+              error={errors.linkedin?.message}
+              {...field}
             />
-        </div>
+          )}
+        />
       </div>
       
       {/* Visa Categories */}
       <div className="mt-8 text-center">
         <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-icon p-3">
+          <div className="rounded-full bg-icon p-3">
             <svg className="h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
             </svg>
-            </div>
-        </div>
-        <h3 className="text-lg font-semibold mb-4">Visa categories of interest?</h3>
-        <div className="flex mb-8">
-          <div className="w-full max-w-md space-y-4">
-            <Controller
-                name="interestedVisas"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                <div className="space-y-2 inline-block text-left">
-                    {visaOptions.map((option) => (
-                    <Checkbox
-                        key={option.value}
-                        id={`visa-${option.value}`}
-                        label={option.label}
-                        checked={value.includes(option.value)}
-                        onChange={(e) => {
-                        const checked = e.target.checked;
-                        const newValue = checked
-                            ? [...value, option.value]
-                            : value.filter((v) => v !== option.value);
-                        onChange(newValue);
-                        }}
-                    />
-                    ))}
-                    {errors.interestedVisas && (
-                    <p className="text-red-500 text-sm mt-1 text-center">
-                        {errors.interestedVisas.message}
-                    </p>
-                    )}
-                </div>
-                )}
-            />
           </div>
         </div>
+        <h3 className="text-lg font-semibold mb-4">Visa categories of interest?</h3>
+        
+        <Controller
+          name="interestedVisas"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <div className="space-y-2 inline-block text-left max-w-md mx-auto">
+              {visaOptions.map((option) => (
+                <Checkbox
+                  key={option.value}
+                  id={`visa-${option.value}`}
+                  label={option.label}
+                  checked={value.includes(option.value)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    const newValue = checked
+                      ? [...value, option.value]
+                      : value.filter((v) => v !== option.value);
+                    onChange(newValue);
+                  }}
+                />
+              ))}
+              {errors.interestedVisas && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.interestedVisas.message}
+                </p>
+              )}
+            </div>
+          )}
+        />
       </div>
       
       {/* Resume Upload */}
@@ -223,19 +216,21 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
             </div>
         </div>
         <h3 className="text-lg font-semibold mb-4">Upload Resume / CV</h3>
-        <Controller
-          name="resume"
-          control={control}
-          render={({ field: { onChange } }) => (
-            <FileUpload
-              id="resume"
-              accept=".pdf,.doc,.docx"
-              onChange={onChange}
-              error={errors.resume?.message}
-            />
-          )}
-        />
+        <div className="max-w-md mx-auto">
+          <Controller
+            name="resume"
+            control={control}
+            render={({ field: { onChange } }) => (
+              <FileUpload
+                id="resume"
+                accept=".pdf,.doc,.docx"
+                onChange={onChange}
+                error={errors.resume?.message}
+              />
+            )}
+          />
         </div>
+      </div>
       
       {/* Open Input */}
       <div className="mt-8 text-center">
@@ -247,21 +242,23 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
             </div>
         </div>
         <h3 className="text-lg font-semibold mb-4">How can we help you?</h3>
-        <Controller
-          name="openInput"
-          control={control}
-          render={({ field }) => (
-            <Textarea
-              id="openInput"
-              placeholder="What is your current status and where are you now? What is your past immigration history? Are you interested in permanent residency or a temporary visa? Tell us more about your goals and any timeline considerations."
-              rows={6}
-              {...field}
-            />
-          )}
-        />
+        <div className="max-w-md mx-auto">
+          <Controller
+            name="openInput"
+            control={control}
+            render={({ field }) => (
+              <Textarea
+                id="openInput"
+                placeholder="What is your current status and where are you now? What is your past immigration history? Are you interested in permanent residency or a temporary visa? Tell us more about your goals and any timeline considerations."
+                rows={6}
+                {...field}
+              />
+            )}
+          />
+        </div>
       </div>
       
-      <div className="mt-8">
+      <div className="mt-8 max-w-md mx-auto">
         <Button
           type="submit"
           fullWidth
