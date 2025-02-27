@@ -1,21 +1,66 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --primary: #1d1d1d;
+  --accent: #B8D957;
+  --accent-light: #f8fdd3;
+  --pending: #6B7280;
+  --reached-out: #B8D957;
+  --background: #FFFFFF;
+  --background-alt: #F9FAFB;
+  --background-dark: #1d1d1d;
+  --input: #FFFFFF;
+  --input-border: #D1D5DB;
+  --button-primary: #1d1d1d;
+  --button-text: #FFFFFF;
+  --text-primary: #1d1d1d;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+  background-color: var(--background);
+}
+
+/* Custom component classes */
+@layer components {
+  .btn-primary {
+    @apply bg-button-primary text-button-text py-2 px-4 rounded-md hover:opacity-90 transition-opacity;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border border-button-primary text-button-primary py-2 px-4 rounded-md hover:bg-gray-50 transition-colors;
+  }
+  
+  .form-input {
+    @apply w-full p-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-text-primary mb-1;
+  }
+  
+  .form-error {
+    @apply text-red-500 text-sm mt-1;
+  }
+  
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-badge-pending {
+    @apply bg-gray-100 text-pending;
+  }
+  
+  .status-badge-reached-out {
+    @apply bg-accent-light text-button-primary;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-card p-6;
+  }
 }
