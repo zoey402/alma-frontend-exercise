@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Lead, LeadStatus } from '@/types/lead';
 import { mockLeads } from '@/mock/leads';
+import { countryOptions } from '@/constants/formData';
 
 // Define the path to our data file
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -21,6 +22,12 @@ class LeadsStorageService {
   // Helper to generate a UUID
   private generateId(): string {
     return Math.random().toString(36).substring(2, 11);
+  }
+
+  // Helper to get country name from country code
+  private getCountryName(countryCode: string): string {
+    const country = countryOptions.find(option => option.value === countryCode);
+    return country ? country.label : countryCode;
   }
 
   // Read all leads from file
@@ -43,9 +50,17 @@ class LeadsStorageService {
     }
   }
 
+  // Sort leads by updatedAt (most recent first)
+  private sortLeads(leads: Lead[]): Lead[] {
+    return [...leads].sort((a, b) => {
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+  }
+
   // Get all leads
   getAllLeads(): Lead[] {
-    return this.readLeadsFile();
+    const leads = this.readLeadsFile();
+    return this.sortLeads(leads);
   }
   
   // Get a lead by ID
@@ -58,8 +73,12 @@ class LeadsStorageService {
   createLead(leadData: Omit<Lead, 'id' | 'status' | 'createdAt' | 'updatedAt'>): Lead {
     const leads = this.readLeadsFile();
     
+    // Convert country code to proper name
+    const countryOfCitizenship = this.getCountryName(leadData.countryOfCitizenship);
+    
     const newLead: Lead = {
       ...leadData,
+      countryOfCitizenship, // Use the proper country name
       id: this.generateId(),
       status: LeadStatus.PENDING,
       createdAt: new Date().toISOString(),
@@ -128,11 +147,15 @@ class LeadsStorageService {
     
     let filteredLeads = this.readLeadsFile();
     
+    // Sort leads by updatedAt (most recent first)
+    filteredLeads = this.sortLeads(filteredLeads);
+    
     // Apply search filter
     if (search) {
       filteredLeads = filteredLeads.filter(lead => 
         `${lead.firstName} ${lead.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-        lead.email.toLowerCase().includes(search.toLowerCase())
+        lead.email.toLowerCase().includes(search.toLowerCase()) ||
+        lead.countryOfCitizenship.toLowerCase().includes(search.toLowerCase())
       );
     }
     
