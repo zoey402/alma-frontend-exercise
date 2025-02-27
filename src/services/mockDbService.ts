@@ -1,27 +1,22 @@
 import { Lead, LeadStatus } from '@/types/lead';
 import { mockLeads as initialMockLeads } from '@/mock/leads';
 
-// Singleton service to manage mock data
+let globalLeads = [...initialMockLeads];
+
 class MockDbService {
-  private leads: Lead[];
-  
-  constructor() {
-    this.leads = [...initialMockLeads];
-  }
-  
-  // Helper to generate a unique ID
+
+  // Helper to get a id
   private generateId(): string {
     return Math.random().toString(36).substring(2, 11);
   }
-  
-  // Get all leads
+
   getAllLeads(): Lead[] {
-    return this.leads;
+    return globalLeads;
   }
   
   // Get a lead by ID
   getLeadById(id: string): Lead | undefined {
-    return this.leads.find(lead => lead.id === id);
+    return globalLeads.find(lead => lead.id === id);
   }
   
   // Create a new lead
@@ -34,38 +29,38 @@ class MockDbService {
       updatedAt: new Date().toISOString(),
     };
     
-    this.leads.push(newLead);
+    globalLeads.push(newLead);
     return newLead;
   }
   
   // Update a lead
   updateLead(id: string, updates: Partial<Lead>): Lead | null {
-    const index = this.leads.findIndex(lead => lead.id === id);
+    const index = globalLeads.findIndex(lead => lead.id === id);
     
     if (index === -1) {
       return null;
     }
     
     const updatedLead = {
-      ...this.leads[index],
+      ...globalLeads[index],
       ...updates,
       updatedAt: new Date().toISOString(),
     };
     
-    this.leads[index] = updatedLead;
+    globalLeads[index] = updatedLead;
     return updatedLead;
   }
   
   // Delete a lead
   deleteLead(id: string): Lead | null {
-    const index = this.leads.findIndex(lead => lead.id === id);
+    const index = globalLeads.findIndex(lead => lead.id === id);
     
     if (index === -1) {
       return null;
     }
     
-    const deletedLead = this.leads[index];
-    this.leads.splice(index, 1);
+    const deletedLead = globalLeads[index];
+    globalLeads.splice(index, 1);
     return deletedLead;
   }
   
@@ -89,7 +84,7 @@ class MockDbService {
       limit = 10,
     } = options;
     
-    let filteredLeads = [...this.leads];
+    let filteredLeads = [...globalLeads];
     
     // Apply search filter
     if (search) {
@@ -118,6 +113,10 @@ class MockDbService {
       limit,
       totalPages,
     };
+  }
+  
+  resetData(): void {
+    globalLeads = [...initialMockLeads];
   }
 }
 

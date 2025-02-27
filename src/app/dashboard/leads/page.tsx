@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lead, LeadStatus } from '@/types/lead';
 import Sidebar from '@/components/dashboard/Sidebar';
@@ -8,7 +8,7 @@ import SearchFilterBar from '@/components/dashboard/SearchFilterBar';
 import LeadsTable from '@/components/dashboard/LeadsTable';
 import Pagination from '@/components/ui/Pagination';
 import Loading from '@/components/ui/Loading';
-import { mockLeads } from '@/mock/leads';
+
 
 export default function LeadsPage() {
   const router = useRouter();
@@ -18,7 +18,28 @@ export default function LeadsPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isUpdating, setIsUpdating] = useState<Record<string, boolean>>({});
   const leadsPerPage = 10;
+
+  const fetchLeads = useCallback(async () => {
+    try {
+      const response = await fetch('/api/leads');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setLeads(data.data);
+        } else {
+          console.error('Error fetching leads:', data.error);
+        }
+      } else {
+        console.error('API request failed with status:', response.status);
+      }
+    } catch (error) {
+      console.error('Failed to fetch leads:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     // Check if user is authenticated (in a real app, this would verify JWT, cookie, etc.)
@@ -30,77 +51,47 @@ export default function LeadsPage() {
         // NOTE: In a production application, this should be a real API request
         // to verify the user's authentication status based on JWT or session cookies
         setIsAuthenticated(true);
-
-        // Try to fetch leads from API, fallback to mock data if API call fails
-        try {
-          const response = await fetch('/api/leads');
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-              setLeads(data.data);
-            } else {
-              console.warn('Using mock data: API returned error', data.error);
-              setLeads(mockLeads);
-            }
-          } else {
-            console.warn('Using mock data: API request failed');
-            setLeads(mockLeads);
-          }
-        } catch (error) {
-          console.warn('Using mock data: API request failed', error);
-          setLeads(mockLeads);
-        }
+        await fetchLeads();
       } catch (error) {
         console.error('Authentication failed:', error);
         router.push('/login'); // Redirect to login if not authenticated
-      } finally {
-        setIsLoading(false);
       }
     };
-
     checkAuth();
-  }, [router]);
+  }, [router, fetchLeads]);
 
   // Update lead status
   const handleUpdateStatus = async (leadId: string, newStatus: LeadStatus) => {
     try {
-      // Try to update status via API
-      try {
-        const response = await fetch(`/api/leads/${leadId}/status`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: newStatus }),
-        });
-        
-        if (!response.ok) {
-          throw new Error('API request failed');
-        }
-      } catch (error) {
-        console.warn('Using optimistic update: API request failed', error);
+      setIsUpdating(prev => ({ ...prev, [leadId]: true }));
+      
+      const response = await fetch(`/api/leads/${leadId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('API request failed');
       }
       
-      // Update local state (optimistic update)
-      setLeads(prevLeads => 
-        prevLeads.map(lead => 
-          lead.id === leadId 
-            ? { 
-                ...lead, 
-                status: newStatus, 
-                updatedAt: new Date().toISOString() 
-              } 
-            : lead
-        )
-      );
+      await fetchLeads();
     } catch (error) {
       console.error('Failed to update lead status:', error);
-      // Handle error (e.g., show toast notification)
+    } finally {
+      setIsUpdating(prev => ({ ...prev, [leadId]: false }));
     }
   };
+
+  const handleFilterChange = useCallback(() => {
+    setCurrentPage(1); // 重置到第一页
+  }, []);
 
   // Filter leads based on search query and status filter
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = searchQuery === '' || 
-      `${lead.firstName} ${lead.lastName}`.toLowerCase().includes(searchQuery.toLowerCase());
+      `${lead.firstName} ${lead.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.email.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === '' || lead.status === statusFilter;
     
@@ -139,11 +130,13 @@ export default function LeadsPage() {
           setSearchQuery={setSearchQuery}
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
+          onFilterChange={handleFilterChange}
         />
         
         <LeadsTable 
           leads={currentLeads}
           onUpdateStatus={handleUpdateStatus}
+          isUpdating={isUpdating}
         />
         
         <Pagination 
