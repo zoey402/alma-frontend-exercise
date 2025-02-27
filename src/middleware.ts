@@ -6,9 +6,6 @@ export function middleware(request: NextRequest) {
   // Get the pathname of the request
   const path = request.nextUrl.pathname;
 
-  // Define public paths that don't require authentication
-  const isPublicPath = path === '/' || path === '/login';
-
   // Check for authentication token in cookies
   const token = request.cookies.get('authToken')?.value || '';
   const isAuthenticated = !!token;
@@ -19,12 +16,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If already authenticated and trying to access login page, redirect to dashboard
-  if (isAuthenticated && isPublicPath) {
-    return NextResponse.redirect(new URL('/dashboard/leads', request.url));
-  }
-
-  // Otherwise, continue with the request
   return NextResponse.next();
 }
 
