@@ -8,6 +8,7 @@ import { z } from 'zod';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { LoginCredentials } from '@/types/auth';
+import { setCookie } from 'cookies-next';
 
 // Form validation schema
 const loginSchema = z.object({
@@ -36,13 +37,17 @@ export default function LoginPage() {
       setError(null);
       
       // For demo purposes, check against hardcoded credentials
-      // In a real app, you would make an API request to verify credentials
       if (data.email === 'admin@example.com' && data.password === 'password123') {
         // Simulate API call delay
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Store auth token in localStorage
-        localStorage.setItem('authToken', 'mock-jwt-token');
+        // Store auth token in cookies
+        setCookie('authToken', 'mock-jwt-token', { 
+          maxAge: 60 * 60 * 24, // 1 day
+          path: '/' 
+        });
+        
+        // Store user data in localStorage
         localStorage.setItem('user', JSON.stringify({
           id: '1',
           email: 'admin@example.com',
@@ -51,7 +56,7 @@ export default function LoginPage() {
         }));
         
         // Redirect to dashboard
-        router.push('/dashboard/leads');
+        router.push('/dashboard/');
       } else {
         setError('Invalid email or password');
       }
