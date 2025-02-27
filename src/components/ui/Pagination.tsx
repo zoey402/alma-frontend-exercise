@@ -54,7 +54,7 @@ const Pagination: React.FC<PaginationProps> = ({
   generatePageNumbers();
 
   return (
-    <div className="flex justify-center py-4">
+    <div className="flex justify-end py-4">
       <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
         {/* Previous button */}
         <button

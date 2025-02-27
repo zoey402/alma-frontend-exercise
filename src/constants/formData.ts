@@ -2,7 +2,7 @@ import { InterestedVisa } from '@/types/lead';
 
 // Country options for dropdown
 export const countryOptions = [
-  { value: '', label: 'Select your country' },
+  { value: '', label: 'Country of Citizenship' },
   { value: 'mexico', label: 'Mexico' },
   { value: 'brazil', label: 'Brazil' },
   { value: 'russia', label: 'Russia' },

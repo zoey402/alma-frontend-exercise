@@ -11,12 +11,13 @@ export default {
       colors: {
         // Primary brand colors from the design
         primary: "#1d1d1d",
-        accent: "#B8D957", 
+        accent: "#d9dea6", 
         "accent-light": "#f8fdd3",
+        icon: "#c0c1fe",
         
         // Status colors
         pending: "#6B7280", 
-        "reached-out": "#B8D957",
+        "reached-out": "#d9dea6",
         
         // Background colors
         background: "#FFFFFF",

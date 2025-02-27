@@ -70,7 +70,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, onUpdateStatus, isUpdati
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusBadge status={lead.status} />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     {lead.status === LeadStatus.PENDING && (
                       <Button
                         onClick={() => onUpdateStatus(lead.id, LeadStatus.REACHED_OUT)}
