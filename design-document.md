@@ -136,7 +136,6 @@ interface Lead {
   lastName: string;
   email: string;
   linkedin: string;
-  country: string;
   countryOfCitizenship: string;
   interestedVisas: string[];
   resumeUrl: string;
