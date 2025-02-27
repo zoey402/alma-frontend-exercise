@@ -7,9 +7,10 @@ import { formatDate } from '@/mock/leads';
 interface LeadsTableProps {
   leads: Lead[];
   onUpdateStatus: (leadId: string, newStatus: LeadStatus) => void;
+  isUpdating?: Record<string, boolean>; 
 }
 
-const LeadsTable: React.FC<LeadsTableProps> = ({ leads, onUpdateStatus }) => {
+const LeadsTable: React.FC<LeadsTableProps> = ({ leads, onUpdateStatus, isUpdating = {} }) => {
   return (
     <div className="bg-white rounded-lg shadow-card overflow-hidden mb-6">
       <div className="overflow-x-auto">
@@ -73,6 +74,8 @@ const LeadsTable: React.FC<LeadsTableProps> = ({ leads, onUpdateStatus }) => {
                     {lead.status === LeadStatus.PENDING && (
                       <Button
                         onClick={() => onUpdateStatus(lead.id, LeadStatus.REACHED_OUT)}
+                        isLoading={isUpdating[lead.id]}
+                        disabled={isUpdating[lead.id]}
                         className="py-1 px-3 text-sm"
                       >
                         Mark as Reached Out

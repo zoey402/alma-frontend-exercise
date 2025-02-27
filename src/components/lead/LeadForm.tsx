@@ -51,18 +51,16 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
       }
       formData.append('openInput', data.openInput || '');
 
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Send form data to API
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        body: formData,
+      });
       
-      // In a real app, you'd make an API request here
-      // const response = await fetch('/api/leads', {
-      //   method: 'POST',
-      //   body: formData,
-      // });
-      
-      // if (!response.ok) {
-      //   throw new Error('Failed to submit form');
-      // }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit form');
+      }
       
       // Mark as submitted and reset form
       onSubmitSuccess();
@@ -208,7 +206,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmitSuccess }) => {
         <Controller
           name="resume"
           control={control}
-          render={({ field: { onChange, value } }) => (
+          render={({ field: { onChange } }) => (
             <FileUpload
               id="resume"
               accept=".pdf,.doc,.docx"

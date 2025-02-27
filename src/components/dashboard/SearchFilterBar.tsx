@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { LeadStatus } from '@/types/lead';
 
 interface SearchFilterBarProps {
@@ -6,14 +6,34 @@ interface SearchFilterBarProps {
   setSearchQuery: (query: string) => void;
   statusFilter: string;
   setStatusFilter: (status: string) => void;
+  onFilterChange?: () => void;
 }
 
 const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   searchQuery,
   setSearchQuery,
   statusFilter,
-  setStatusFilter
+  setStatusFilter,
+  onFilterChange
 }) => {
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+
+    if (onFilterChange) {
+      const timer = setTimeout(() => {
+        onFilterChange();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [setSearchQuery, onFilterChange]);
+
+  const handleStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(e.target.value);
+    if (onFilterChange) {
+      onFilterChange();
+    }
+  }, [setStatusFilter, onFilterChange]);
+
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-6">
       <div className="relative flex-1">
@@ -27,7 +47,7 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           className="form-input pl-10 w-full p-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
           placeholder="Search"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={handleSearchChange}
         />
       </div>
       
@@ -35,7 +55,7 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
         <select
           className="form-input w-full p-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={handleStatusChange}
         >
           <option value="">All Status</option>
           <option value={LeadStatus.PENDING}>Pending</option>

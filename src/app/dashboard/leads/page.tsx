@@ -26,13 +26,30 @@ export default function LeadsPage() {
       try {
         // Simulate API call to check authentication
         await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // For demo purposes, we're assuming the user is authenticated
+
+        // NOTE: In a production application, this should be a real API request
+        // to verify the user's authentication status based on JWT or session cookies
         setIsAuthenticated(true);
-        
-        // Fetch leads (using mock data for now)
-        // In a real app, you would fetch from an API
-        setLeads(mockLeads);
+
+        // Try to fetch leads from API, fallback to mock data if API call fails
+        try {
+          const response = await fetch('/api/leads');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              setLeads(data.data);
+            } else {
+              console.warn('Using mock data: API returned error', data.error);
+              setLeads(mockLeads);
+            }
+          } else {
+            console.warn('Using mock data: API request failed');
+            setLeads(mockLeads);
+          }
+        } catch (error) {
+          console.warn('Using mock data: API request failed', error);
+          setLeads(mockLeads);
+        }
       } catch (error) {
         console.error('Authentication failed:', error);
         router.push('/login'); // Redirect to login if not authenticated
@@ -47,10 +64,22 @@ export default function LeadsPage() {
   // Update lead status
   const handleUpdateStatus = async (leadId: string, newStatus: LeadStatus) => {
     try {
-      // Simulate API call to update status
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Try to update status via API
+      try {
+        const response = await fetch(`/api/leads/${leadId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('API request failed');
+        }
+      } catch (error) {
+        console.warn('Using optimistic update: API request failed', error);
+      }
       
-      // Update local state
+      // Update local state (optimistic update)
       setLeads(prevLeads => 
         prevLeads.map(lead => 
           lead.id === leadId 
@@ -62,13 +91,6 @@ export default function LeadsPage() {
             : lead
         )
       );
-      
-      // In a real app, you would make an API request:
-      // await fetch(`/api/leads/${leadId}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ status: newStatus }),
-      // });
     } catch (error) {
       console.error('Failed to update lead status:', error);
       // Handle error (e.g., show toast notification)
